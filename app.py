@@ -7,7 +7,6 @@ app.secret_key = "secret123"
 
 socketio = SocketIO(
     app,
-    async_mode="asgi",
     cors_allowed_origins="*"
 )
 
@@ -84,3 +83,7 @@ def typing(user):
 @socketio.on("stop_typing")
 def stop():
     emit("stop_typing", broadcast=True)
+
+
+# 🔥 ASGI APP (ВАЖНО)
+asgi_app = socketio.ASGIApp(app)
