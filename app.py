@@ -1,6 +1,3 @@
-import eventlet
-eventlet.monkey_patch()
-
 from flask import Flask, render_template, request, redirect, session, send_from_directory
 from flask_socketio import SocketIO, emit
 import os, sqlite3, hashlib
@@ -10,20 +7,12 @@ app.secret_key = "secret123"
 
 socketio = SocketIO(
     app,
-    async_mode="eventlet",
-    cors_allowed_origins="*",
-    ping_interval=25,
-    ping_timeout=60
+    async_mode="asgi",
+    cors_allowed_origins="*"
 )
 
-
 UPLOAD_FOLDER = "uploads"
-
-# --- FIX FOR RENDER ---
-if not os.path.isdir(UPLOAD_FOLDER):
-    if os.path.exists(UPLOAD_FOLDER):
-        os.remove(UPLOAD_FOLDER)
-    os.mkdir(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ---------- DB ----------
 def db():
@@ -71,7 +60,7 @@ def index():
         return redirect("/login")
     return render_template("index.html", user=session["user"])
 
-# ---------- FILE UPLOAD ----------
+# ---------- UPLOAD ----------
 @app.route("/upload", methods=["POST"])
 def upload():
     f = request.files["file"]
@@ -95,7 +84,3 @@ def typing(user):
 @socketio.on("stop_typing")
 def stop():
     emit("stop_typing", broadcast=True)
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port)
