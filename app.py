@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, send_from_directory
 from flask_socketio import SocketIO, emit
+from socketio import ASGIApp
 import os, sqlite3, hashlib
 
 app = Flask(__name__)
@@ -8,16 +9,16 @@ app.secret_key = "secret123"
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    ping_interval=20,
-    ping_timeout=60
+    async_mode="asgi"
 )
 
-# ---------- UPLOADS (FIX FOR RENDER) ----------
+# ---------- UPLOADS (FIX) ----------
 UPLOAD_FOLDER = "uploads"
 
-if not os.path.isdir(UPLOAD_FOLDER):
-    if os.path.exists(UPLOAD_FOLDER):
-        os.remove(UPLOAD_FOLDER)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.mkdir(UPLOAD_FOLDER)
+elif not os.path.isdir(UPLOAD_FOLDER):
+    os.remove(UPLOAD_FOLDER)
     os.mkdir(UPLOAD_FOLDER)
 
 # ---------- DB ----------
@@ -81,16 +82,16 @@ def files(name):
 
 # ---------- SOCKET ----------
 @socketio.on("message")
-def handle_message(data):
+def message(data):
     emit("message", data, broadcast=True)
 
 @socketio.on("typing")
-def handle_typing(user):
+def typing(user):
     emit("typing", user, broadcast=True, include_self=False)
 
 @socketio.on("stop_typing")
-def handle_stop_typing():
+def stop_typing():
     emit("stop_typing", broadcast=True)
 
-# ---------- ASGI ----------
-asgi_app = socketio.ASGIApp(app)
+# ---------- ASGI (FIXED) ----------
+asgi_app = ASGIApp(socketio, app)
