@@ -11,18 +11,25 @@ app.secret_key = "secret123"
 socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
 
 UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# --- FIX FOR RENDER ---
+if not os.path.isdir(UPLOAD_FOLDER):
+    if os.path.exists(UPLOAD_FOLDER):
+        os.remove(UPLOAD_FOLDER)
+    os.mkdir(UPLOAD_FOLDER)
 
 # ---------- DB ----------
 def db():
     return sqlite3.connect("users.db")
 
 with db() as c:
-    c.execute("""CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
-        username TEXT UNIQUE,
-        password TEXT
-    )""")
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE,
+            password TEXT
+        )
+    """)
 
 # ---------- AUTH ----------
 @app.route("/register", methods=["GET","POST"])
