@@ -8,7 +8,14 @@ import os, sqlite3, hashlib
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-socketio = SocketIO(app, async_mode="eventlet", cors_allowed_origins="*")
+socketio = SocketIO(
+    app,
+    async_mode="eventlet",
+    cors_allowed_origins="*",
+    ping_interval=25,
+    ping_timeout=60
+)
+
 
 UPLOAD_FOLDER = "uploads"
 
