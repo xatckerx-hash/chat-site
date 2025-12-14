@@ -3,70 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <title>Chat</title>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
-body{margin:0;background:#0f172a;color:white;font-family:sans-serif}
-.chat{max-width:1000px;height:95vh;margin:auto;display:flex;flex-direction:column}
-#messages{flex:1;overflow-y:auto}
-.msg{background:#1e293b;margin:5px;padding:10px;border-radius:10px}
-input,button{padding:10px;margin:5px}
+body { background:#111; color:white; font-family:Arial }
+#chat { height:400px; overflow-y:auto; border:1px solid #333; padding:10px }
+input { width:100%; padding:10px; }
 </style>
 </head>
 <body>
 
-<div class="chat">
-<h3>{{user}}</h3>
-<div id="messages"></div>
-<div id="typing"></div>
-<input id="message" placeholder="Сообщение">
-<input type="file" id="file">
-<button onclick="send()">Отправить</button>
-</div>
+<h2>🔥 Chat</h2>
+<div id="chat"></div>
+<input id="msg" placeholder="Enter — отправить">
 
 <script>
-const socket = io({
-  transports: ["websocket"],
-  upgrade: false
+const socket = io();
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("msg");
+
+socket.on("message", data => {
+    chat.innerHTML += `<div><b>${data.user}:</b> ${data.text}</div>`;
+    chat.scrollTop = chat.scrollHeight;
 });
 
-const user = "{{user}}";
-
-socket.on("message", d=>{
- let m=document.createElement("div");
- m.className="msg";
- if(d.img){
-   m.innerHTML=`<b>${d.user}</b><br><img src="${d.img}" width="300">`;
- } else {
-   m.innerText=d.user+": "+d.text;
- }
- messages.appendChild(m);
- messages.scrollTop=messages.scrollHeight;
+input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+        socket.emit("message", {
+            user: "User",
+            text: input.value
+        });
+        input.value = "";
+    } else {
+        socket.emit("typing", "User печатает...");
+    }
 });
-
-socket.on("typing",u=>typing.innerText=u+" печатает...");
-socket.on("stop_typing",()=>typing.innerText="");
-
-message.oninput=()=>{
- socket.emit("typing",user);
- setTimeout(()=>socket.emit("stop_typing"),800);
-};
-
-message.onkeydown=e=>{if(e.key==="Enter")send()}
-
-function send(){
- if(file.files[0]){
-   let fd=new FormData();
-   fd.append("file",file.files[0]);
-   fetch("/upload",{method:"POST",body:fd})
-   .then(r=>r.json()).then(j=>{
-     socket.emit("message",{user:user,img:j.url});
-   });
-   file.value="";
-   return;
- }
- socket.emit("message",{user:user,text:message.value});
- message.value="";
-}
 </script>
+
 </body>
 </html>
