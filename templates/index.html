@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Chat</title>
-<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <style>
 body{margin:0;background:#0f172a;color:white;font-family:sans-serif}
 .chat{max-width:1000px;height:95vh;margin:auto;display:flex;flex-direction:column}
@@ -24,12 +24,12 @@ input,button{padding:10px;margin:5px}
 </div>
 
 <script>
-let socket = io({
-    transports: ["websocket"],
-    upgrade: false
+const socket = io({
+  transports: ["websocket"],
+  upgrade: false
 });
 
-let user = "{{user}}";
+const user = "{{user}}";
 
 socket.on("message", d=>{
  let m=document.createElement("div");
@@ -48,7 +48,7 @@ socket.on("stop_typing",()=>typing.innerText="");
 
 message.oninput=()=>{
  socket.emit("typing",user);
- setTimeout(()=>socket.emit("stop_typing"),1000);
+ setTimeout(()=>socket.emit("stop_typing"),800);
 };
 
 message.onkeydown=e=>{if(e.key==="Enter")send()}
