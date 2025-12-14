@@ -24,7 +24,11 @@ input,button{padding:10px;margin:5px}
 </div>
 
 <script>
-let socket = io();
+let socket = io({
+    transports: ["websocket"],
+    upgrade: false
+});
+
 let user = "{{user}}";
 
 socket.on("message", d=>{
